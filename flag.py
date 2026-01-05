@@ -2,170 +2,151 @@ import turtle
 import time
 import random
 
-# --- 1. Screen Setup ---
 screen = turtle.Screen()
 screen.title("Bangladesh Flag with Moving Clouds")
-screen.setup(width=900, height=700)
-screen.bgcolor("#87CEEB")  # Sky Blue
-screen.tracer(0)  # Turn off auto-update for smooth animation
+screen.setup(900, 700)
+screen.bgcolor("#87CEEB")
 
-# --- 2. Flag & Scene Constants ---
-# Flag Ratio 10:6
-FLAG_WIDTH = 300
-FLAG_HEIGHT = 180
-FLAG_RADIUS = FLAG_WIDTH * 0.2  # Radius is 20% of width
-POLE_HEIGHT = 450
+t = turtle.Turtle()
+t.speed(6)  # Visible speed
 
-# --- 3. Drawing Functions ---
+# ground
+t.penup()
+t.goto(-450, -200)
+t.pendown()
+t.color("#228B22")
+t.begin_fill()
+t.forward(900)
+t.right(90)
+t.forward(200)
+t.right(90)
+t.forward(900)
+t.right(90)
+t.forward(200)
+t.right(90)
+t.end_fill()
 
-def draw_rectangle(t, color, width, height):
-    t.color(color)
-    t.begin_fill()
-    for _ in range(2):
-        t.forward(width)
-        t.right(90)
-        t.forward(height)
-        t.right(90)
-    t.end_fill()
+# grass
+t.color("#006400")
+t.pensize(3)
+for x in range(-450, 451, 20):
+    t.penup()
+    t.goto(x, -200)
+    t.pendown()
+    t.setheading(90)
+    t.forward(random.randint(15, 35))
 
-def draw_circle(t, color, r):
-    t.color(color)
-    t.begin_fill()
-    t.circle(r)
-    t.end_fill()
+# sun fix: set heading
+t.setheading(0)
+t.penup()
+t.goto(320, 220)
+t.pendown()
+t.color("#FFD700")
+t.begin_fill()
+t.circle(40)
+t.end_fill()
 
-def draw_ground():
-    g = turtle.Turtle()
-    g.hideturtle()
-    g.speed(0)
-    
-    # Soil/Ground Base
-    g.penup()
-    g.goto(-450, -200)
-    g.pendown()
-    draw_rectangle(g, "#228B22", 900, 200) # Forest Green
-    
-    # Grass Effect
-    g.color("#006400") # Dark Green
-    g.pensize(3)
-    g.setheading(90)
-    for x in range(-450, 450, 20):
-        g.penup()
-        g.goto(x, -200)
-        g.pendown()
-        # Random grass height
-        g.forward(random.randint(15, 35))
+t.pensize(3)
+for i in range(12):
+    t.penup()
+    t.goto(320, 260)
+    t.setheading(i * 30)
+    t.forward(50)
+    t.pendown()
+    t.forward(20)
 
-def draw_sun():
-    s = turtle.Turtle()
-    s.hideturtle()
-    s.penup()
-    s.goto(320, 220)
-    s.pendown()
-    s.color("#FFD700") # Gold
-    s.begin_fill()
-    s.circle(40)
-    s.end_fill()
-    
-    # Sun Rays
-    s.pensize(3)
-    for i in range(12):
-        s.penup()
-        s.goto(320, 260) # Center of sun
-        s.setheading(i * 30)
-        s.forward(50)
-        s.pendown()
-        s.forward(20)
+# pole
+t.penup()
+t.goto(-100, -250)
+t.pendown()
+t.color("#8B4513")
+t.pensize(10)
+t.setheading(90)
+t.forward(450)
+t.penup()
+t.forward(10)
+t.dot(20, "gold")
 
-def draw_flag_and_pole():
-    p = turtle.Turtle()
-    p.speed(0)
-    p.hideturtle()
-    
-    # 1. The Pole
-    p.penup()
-    p.goto(-100, -250)
-    p.color("#8B4513") # Saddle Brown
-    p.pensize(10)
-    p.setheading(90) # Upwards
-    p.pendown()
-    p.forward(POLE_HEIGHT)
-    
-    # Pole Top Knob
-    p.color("gold")
-    p.dot(20)
-    
-    # 2. Green Field (Starting from top of pole)
-    start_x = -95 # Just beside the pole
-    start_y = -250 + POLE_HEIGHT - 10 # Little bit down from top
-    
-    p.penup()
-    p.goto(start_x, start_y)
-    p.setheading(0) # Face right
-    draw_rectangle(p, "#006A4E", FLAG_WIDTH, FLAG_HEIGHT) # Official Bottle Green
-    
-    # 3. Red Disc
-    # Center logic: 9/20 of width from left (45% of width)
-    center_x = start_x + (FLAG_WIDTH * 0.45)
-    # Vertical center: Half of height
-    center_y_pos = start_y - (FLAG_HEIGHT / 2)
-    
-    # Move to start drawing circle (turtle draws from bottom edge of circle)
-    p.penup()
-    p.goto(center_x, center_y_pos - FLAG_RADIUS)
-    draw_circle(p, "#F42A41", FLAG_RADIUS) # Official Red
+# green part
+t.goto(-95, 190)
+t.setheading(0)
+t.pendown()
+t.color("#006A4E")
+t.begin_fill()
+t.forward(300)
+t.right(90)
+t.forward(180)
+t.right(90)
+t.forward(300)
+t.right(90)
+t.forward(180)
+t.right(90)
+t.end_fill()
 
-# --- 4. Cloud Class for Animation ---
-class Cloud:
-    def __init__(self, x, y, speed):
-        self.t = turtle.Turtle()
-        self.t.hideturtle()
-        self.t.penup()
-        self.t.color("white")
-        self.t.speed(0)
-        self.x = x
-        self.y = y
-        self.speed = speed
-        self.draw_shape() # Draw cloud once inside the turtle shape
-        
-    def draw_shape(self):
-        # We define the cloud shape using a custom polygon or stamps
-        # To make it movable easily, we will just use the turtle as a drawing cursor
-        # but re-drawing creates lag. Better approach: Use turtle 'shape'
-        self.t.shape("circle")
-        self.t.shapesize(stretch_wid=2, stretch_len=4) # Oval shape cloud
-    
-    def move(self):
-        self.x += self.speed
-        if self.x > 500: # Reset if goes off screen
-            self.x = -500
-            self.y = random.randint(150, 300)
-        self.t.goto(self.x, self.y)
-        self.t.showturtle()
+# red circle
+t.penup()
+t.goto(40, 40)
+t.pendown()
+t.color("#F42A41")
+t.begin_fill()
+t.circle(60)
+t.end_fill()
 
-# --- 5. Main Execution ---
+t.hideturtle()  # Hide after drawing
 
-# Draw Static Elements
-draw_ground()
-draw_sun()
-draw_flag_and_pole()
+# clouds
+c1 = turtle.Turtle()
+c1.shape("circle")
+c1.shapesize(2, 4)
+c1.color("white")
+c1.penup()
+c1.goto(-300, 250)
 
-# Create Clouds
-clouds = [
-    Cloud(-300, 250, 0.5),
-    Cloud(-100, 200, 0.3),
-    Cloud(100, 270, 0.6)
-]
+c2 = turtle.Turtle()
+c2.shape("circle")
+c2.shapesize(2, 4)
+c2.color("white")
+c2.penup()
+c2.goto(-100, 200)
 
-# --- 6. Animation Loop ---
-print("Animation Started... Press Close Button to Exit.")
+c3 = turtle.Turtle()
+c3.shape("circle")
+c3.shapesize(2, 4)
+c3.color("white")
+c3.penup()
+c3.goto(100, 270)
+
+screen.tracer(0)  # No anim for clouds
+
+print("Animation running... Close window to stop.")
+
 while True:
     try:
-        for cloud in clouds:
-            cloud.move()
-        
-        screen.update() # Update the screen manually
-        time.sleep(0.01) # Small delay to control framerate
-        
-    except turtle.Terminator:
-        break # Exit cleanly if window is closed
+        # cloud 1
+        x = c1.xcor() + 0.5
+        y = c1.ycor()
+        if x > 500:
+            x = -500
+            y = random.randint(150, 300)
+        c1.goto(x, y)
+
+        # cloud 2
+        x = c2.xcor() + 0.3
+        y = c2.ycor()
+        if x > 500:
+            x = -500
+            y = random.randint(150, 300)
+        c2.goto(x, y)
+
+        # cloud 3
+        x = c3.xcor() + 0.6
+        y = c3.ycor()
+        if x > 500:
+            x = -500
+            y = random.randint(150, 300)
+        c3.goto(x, y)
+
+        screen.update()
+        time.sleep(0.01)
+    except:
+        break
